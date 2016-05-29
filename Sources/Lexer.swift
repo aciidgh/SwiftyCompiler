@@ -3,30 +3,42 @@ import Darwin.C
 
 struct Lexer {
     enum Token {
+        // An integer number.
         case number(Int)
+        // An identifier.
         case identifier(String)
+        // A function declaration `func`.
         case function
+        // EOF.
         case eof
+        // Any amount of whitespace.
         case whitespace
+        // ,
         case comma
+        // {
         case curlybracesBegin 
+        // }
         case curlybracesEnd
+        // (
         case parathensisBegin
+        // )
         case parathensisEnd
+        // Unknown character.
         case unknown(UInt8)
     }
 
-    // Data to be Lexed.
+    // Data to be lexed.
     let data: String
 
-    // Current Index.
+    // Current index.
     private(set) var index: String.UTF8View.Index
 
     init(_ data: String) {
         self.data = data
         self.index = self.data.utf8.startIndex
     }
-
+    
+    // Look at current character but don't eat it.
     private func peek() -> UInt8? {
         // Reached end, return.
         guard index != data.utf8.endIndex else { return nil }
@@ -34,9 +46,11 @@ struct Lexer {
         return data.utf8[index]
     }
 
-    // Eat and return the next char.
+    // Eat and increment the current index.
     private mutating func eat() -> UInt8? {
+        // Don't go beyond the last index.
         guard index != data.utf8.endIndex else { return nil }
+        // Get the current character.
         let char = data.utf8[index]
         // Increment the index.
         index = data.utf8.index(after: index)
@@ -44,12 +58,14 @@ struct Lexer {
     }
 
     mutating func next() -> Token {
+        // Store the start index to be able to form ranges.
         let startIndex = index
         // Eat the next character otherwise we reached EOF.
         guard let char = eat() else { return .eof } 
 
         switch char {
         case let c where c.isSpace:
+            // Consume rest of the whitespace if present.
             while let next = peek() where next.isSpace {
                 let _ = eat()
             }
@@ -71,6 +87,7 @@ struct Lexer {
             return .comma
 
         case let c where c.isAlphaNum:
+            // Get the entire identifier.
             while let next = peek() where next.isAlphaNum {
                 let _ = eat()
             }
@@ -81,6 +98,7 @@ struct Lexer {
         }
     }
 
+    // Lex and return list of all the tokens.
     mutating func allTokens() -> [Token] {
         var tokens = [Token]()
         var token = next()
@@ -92,6 +110,36 @@ struct Lexer {
         return tokens
     }
 }
+
+extension Lexer.Token: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case number(let num):
+            return "\(num)"
+        case identifier(let str):
+            return str
+        case function:
+            return "func"
+        case eof:
+            return "EOF"
+        case whitespace:
+            return "whitespace"
+        case comma:
+            return ","
+        case curlybracesBegin:
+            return "{"
+        case curlybracesEnd:
+            return "}"
+        case parathensisBegin:
+            return "("
+        case parathensisEnd:
+            return ")"
+        case unknown(let char):
+            return string(char)
+        }
+    }
+}
+
 
 private extension UInt8 {
     var isSpace: Bool {
