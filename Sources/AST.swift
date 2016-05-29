@@ -30,3 +30,25 @@ final class BinaryOpExpr: Expr {
         self.rhs = rhs
     }
 }
+
+/// Expression for function calls.
+final class CallExpr: Expr {
+    let callee: String
+    let args: [Expr]
+    init(callee: String, args: [Expr]) {
+        self.callee = callee
+        self.args = args
+    }
+}
+
+/// Represents function defination.
+final class FunctionAST {
+    let name: String
+    let args: [String]
+    let body: Expr
+    init(name: String, args: [String], body: Expr) {
+        self.name = name
+        self.args = args
+        self.body = body
+    }
+}

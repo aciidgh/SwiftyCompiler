@@ -11,6 +11,8 @@ struct Lexer {
         case eof
         // Any amount of whitespace.
         case whitespace
+        // New line `\n`.
+        case newline
         // ,
         case comma
         // {
@@ -147,6 +149,9 @@ extension Lexer.Token {
         case UInt8(ascii: ","):
             self = .comma
 
+        case UInt8(ascii: "\n"):
+            self = .newline
+
         case UInt8(ascii: "="):
             self = .op(.assignment)
 
@@ -176,6 +181,8 @@ extension Lexer.Token: CustomStringConvertible {
             return "EOF"
         case whitespace:
             return "whitespace"
+        case newline:
+            return "newline"
         case comma:
             return ","
         case curlybracesBegin:

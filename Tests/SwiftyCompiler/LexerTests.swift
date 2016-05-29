@@ -4,10 +4,10 @@ import XCTest
 final class LexerTests: XCTestCase {
 
     func testLexFunction() {
-        let data = "func hello(a, b) { }"
+        let data = "func hello(a, b)\n{ }"
         var lexer = Lexer(data)
         let tokens = lexer.allTokens().map { "\($0)" }
-        XCTAssertEqual(tokens, ["function", "whitespace", "hello", "(", "a", ",", "whitespace", "b", ")", "whitespace", "{", "whitespace", "}"])
+        XCTAssertEqual(tokens, ["function", "whitespace", "hello", "(", "a", ",", "whitespace", "b", ")", "newline", "{", "whitespace", "}"])
     }
 
     func testLexNumber() {
