@@ -23,12 +23,17 @@ struct Lexer {
         case parathensisEnd
         // Variable declaration `var`.
         case variableDecl
-        // =
-        case assignmentOp
-        // +
-        case addOp
+        // Operator like assignment, add, subtract, multiply etc.
+        case op(Operator)
         // Unknown character.
         case unknown(UInt8)
+
+        enum Operator {
+            // Addition operator.
+            case add
+            // Assignment operator.
+            case assignment
+        }
     }
 
     // Data to be lexed.
@@ -143,10 +148,10 @@ extension Lexer.Token {
             self = .comma
 
         case UInt8(ascii: "="):
-            self = .assignmentOp
+            self = .op(.assignment)
 
         case UInt8(ascii: "+"):
-            self = .addOp
+            self = .op(.add)
 
 //        case UInt8(ascii: "-"):
 //        case UInt8(ascii: "*"):
@@ -183,10 +188,8 @@ extension Lexer.Token: CustomStringConvertible {
             return ")"
         case variableDecl:
             return "variableDecl"
-        case assignmentOp:
-            return "assignmentOp"
-        case addOp:
-            return "addOp"
+        case op(let op):
+            return "\(op)"
         case unknown(let char):
             return string(char)
         }

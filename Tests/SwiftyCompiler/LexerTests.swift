@@ -14,6 +14,6 @@ final class LexerTests: XCTestCase {
         let data = "var sup = 12 + 45"
         var lexer = Lexer(data)
         let tokens = lexer.allTokens().map { "\($0)" }
-        XCTAssertEqual(tokens, ["variableDecl", "whitespace", "sup", "whitespace", "assignmentOp", "whitespace", "Int(12)", "whitespace", "addOp", "whitespace", "Int(45)"])
+        XCTAssertEqual(tokens, ["variableDecl", "whitespace", "sup", "whitespace", "assignment", "whitespace", "Int(12)", "whitespace", "add", "whitespace", "Int(45)"])
     }
 }
