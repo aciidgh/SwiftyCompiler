@@ -1,5 +1,3 @@
-//import CLLVM
-import Darwin.C
 
 struct Lexer {
     enum Token {
@@ -86,15 +84,25 @@ struct Lexer {
         case UInt8(ascii: ","):
             return .comma
 
+        case let c where c.isNumber:
+            // Get the entire number.
+            while let next = peek() where next.isNumber {
+                let _ = eat()
+            }
+            let str = String(data.utf8[startIndex..<index])!
+            guard let num = Int(str) else { fatalError("Expected integer number \(str)") }
+            return .number(num)
+
         case let c where c.isAlphaNum:
             // Get the entire identifier.
             while let next = peek() where next.isAlphaNum {
                 let _ = eat()
             }
             return .identifier(String(data.utf8[startIndex..<index]))
+
         default:
             // Unknown character found. 
-        return .unknown(char) 
+            return .unknown(char) 
         }
     }
 
@@ -168,10 +176,10 @@ private extension UInt8 {
         }
     }
 }
+
 func string(_ arr: UInt8) -> String {
     let tmp = [arr, UInt8(0)]
     return tmp.withUnsafeBufferPointer { ptr in
         return String(cString: unsafeBitCast(ptr.baseAddress, to: UnsafePointer<CChar>.self))
     }
 }
-
