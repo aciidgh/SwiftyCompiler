@@ -21,6 +21,12 @@ struct Lexer {
         case parathensisBegin
         // )
         case parathensisEnd
+        // Variable declaration `var`.
+        case variableDecl
+        // =
+        case assignmentOp
+        // +
+        case addOp
         // Unknown character.
         case unknown(UInt8)
     }
@@ -69,21 +75,6 @@ struct Lexer {
             }
             return .whitespace
 
-        case UInt8(ascii: "{"):
-            return .curlybracesBegin
-
-        case UInt8(ascii: "}"):
-            return .curlybracesEnd
-
-        case UInt8(ascii: "("):
-            return .parathensisBegin
-
-        case UInt8(ascii: ")"):
-            return .parathensisEnd
-
-        case UInt8(ascii: ","):
-            return .comma
-
         case let c where c.isNumber:
             // Get the entire number.
             while let next = peek() where next.isNumber {
@@ -98,11 +89,12 @@ struct Lexer {
             while let next = peek() where next.isAlphaNum {
                 let _ = eat()
             }
-            return .identifier(String(data.utf8[startIndex..<index]))
+            let str = String(data.utf8[startIndex..<index])!
+            return Token(str: str)
 
         default:
-            // Unknown character found. 
-            return .unknown(char) 
+            // Single char tokens.
+            return Token(char: char)
         }
     }
 
@@ -119,15 +111,62 @@ struct Lexer {
     }
 }
 
+extension Lexer.Token {
+    // Keywords init.
+    init(str: String) {
+        switch str {
+        case "func":
+            self = .function
+        case "var":
+            self = .variableDecl
+        default:
+            self = .identifier(str)
+        }
+    }
+
+    // Operators etc.
+    init(char: UInt8) {
+        switch char {
+        case UInt8(ascii: "{"):
+            self = .curlybracesBegin
+
+        case UInt8(ascii: "}"):
+            self = .curlybracesEnd
+
+        case UInt8(ascii: "("):
+            self = .parathensisBegin
+
+        case UInt8(ascii: ")"):
+            self = .parathensisEnd
+
+        case UInt8(ascii: ","):
+            self = .comma
+
+        case UInt8(ascii: "="):
+            self = .assignmentOp
+
+        case UInt8(ascii: "+"):
+            self = .addOp
+
+//        case UInt8(ascii: "-"):
+//        case UInt8(ascii: "*"):
+//        case UInt8(ascii: "/"):
+//        case UInt8(ascii: ""):
+        default:
+            self = .unknown(char) 
+        }
+    }
+}
+
 extension Lexer.Token: CustomStringConvertible {
     var description: String {
         switch self {
         case number(let num):
-            return "\(num)"
+            return "Int(\(num))"
         case identifier(let str):
             return str
         case function:
-            return "func"
+            return "function"
         case eof:
             return "EOF"
         case whitespace:
@@ -142,12 +181,17 @@ extension Lexer.Token: CustomStringConvertible {
             return "("
         case parathensisEnd:
             return ")"
+        case variableDecl:
+            return "variableDecl"
+        case assignmentOp:
+            return "assignmentOp"
+        case addOp:
+            return "addOp"
         case unknown(let char):
             return string(char)
         }
     }
 }
-
 
 private extension UInt8 {
     var isSpace: Bool {
